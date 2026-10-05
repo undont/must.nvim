@@ -1,6 +1,7 @@
 local toc = require("must.toc")
 
 local rfc2616 = "rfc2616.txt"
+local rfc9110 = "rfc9110.txt"
 
 local function read_fixture(name)
     local lines = {}
@@ -42,5 +43,35 @@ describe("extract_toc_entries", function()
         local start_idx = toc.find_toc_start(content)
         local entries = toc.extract_toc_entries(content, start_idx)
         assert.are.equal(628, entries[5].line)
+    end)
+    it("matches rows without dot leaders", function()
+        local content = read_fixture(rfc9110)
+        local start_idx = toc.find_toc_start(content)
+        local entries = toc.extract_toc_entries(content, start_idx)
+        assert.are.equal(291, #entries)
+    end)
+    it("finds the body line for a wrapped row", function()
+        local content = read_fixture(rfc9110)
+        local start_idx = toc.find_toc_start(content)
+        local entries = toc.extract_toc_entries(content, start_idx)
+        local line = nil
+        for _, e in ipairs(entries) do
+            if e.number == "8.8.3.3." then
+                line = e.line
+            end
+        end
+        assert.are.equal(3672, line)
+    end)
+    it("joins a wrapped row's title", function()
+        local content = read_fixture(rfc9110)
+        local start_idx = toc.find_toc_start(content)
+        local entries = toc.extract_toc_entries(content, start_idx)
+        local title = nil
+        for _, e in ipairs(entries) do
+            if e.number == "8.8.3.3." then
+                title = e.title
+            end
+        end
+        assert.are.equal("Example: Entity Tags Varying on Content-Negotiated Resources", title)
     end)
 end)

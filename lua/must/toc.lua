@@ -18,7 +18,11 @@ function M.extract_toc_entries(content, start_idx)
     local res = {}
     for i = start_idx, #content do
         local line = content[i]
-        local number, title = line:match("^%s*([%d%.]+)%s+(.-)%s*%.+%d*$")
+        local number, title = line:match("^%s*([%d%.]+)%s+(.-)%s*%.*%d*$")
+        local prev = content[i - 1]
+        local indented_more = #line:match("^%s*") > #prev:match("^%s*")
+        local prev_numbered = prev:match("^%s*%d") ~= nil
+        local numbered = line:match("^%s*%d") ~= nil
         if line:match("^%d") then
             break
         end
@@ -27,6 +31,9 @@ function M.extract_toc_entries(content, start_idx)
             if target then
                 table.insert(res, { number = number, title = title, line = target })
             end
+        elseif indented_more and prev_numbered and not numbered then
+            line = line:match("^%s*(.-)%s*$")
+            res[#res].title = res[#res].title .. " " .. line
         end
     end
     return res
