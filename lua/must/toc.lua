@@ -19,6 +19,16 @@ function M.extract_toc_entries(content, start_idx)
     for i = start_idx, #content do
         local line = content[i]
         local number, title = line:match("^%s*([%d%.]+)%s+(.-)%s*%.*%d*$")
+        if not number then
+            number, title = line:match("^%s*(Appendix%s*%u%.)%s+(.-)%s*%.*%d*$")
+        end
+        if not number then
+            number, title = line:match("^%s*(%u%.[%d%.]+)%s+(.-)%s*%.*$")
+        end
+        if not number then
+            title = line:match("^%s%s%s(%u.+)$")
+            number = title and ""
+        end
         local prev = content[i - 1]
         local indented_more = #line:match("^%s*") > #prev:match("^%s*")
         local prev_numbered = prev:match("^%s*%d") ~= nil

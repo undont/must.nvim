@@ -11,6 +11,14 @@ local function read_fixture(name)
     return lines
 end
 
+local function find_entry(entries, field, value)
+    for _, e in ipairs(entries) do
+        if e[field] == value then
+            return e
+        end
+    end
+end
+
 describe("find_toc_start", function()
     it("finds a real header line", function()
         local lines = read_fixture(rfc2616)
@@ -43,35 +51,47 @@ describe("extract_toc_entries", function()
         local start_idx = toc.find_toc_start(content)
         local entries = toc.extract_toc_entries(content, start_idx)
         assert.are.equal(628, entries[5].line)
+        assert.are.equal(253, #entries)
     end)
     it("matches rows without dot leaders", function()
         local content = read_fixture(rfc9110)
         local start_idx = toc.find_toc_start(content)
         local entries = toc.extract_toc_entries(content, start_idx)
-        assert.are.equal(291, #entries)
+        assert.are.equal(305, #entries)
     end)
     it("finds the body line for a wrapped row", function()
         local content = read_fixture(rfc9110)
         local start_idx = toc.find_toc_start(content)
         local entries = toc.extract_toc_entries(content, start_idx)
-        local line = nil
-        for _, e in ipairs(entries) do
-            if e.number == "8.8.3.3." then
-                line = e.line
-            end
-        end
+        local line = find_entry(entries, "number", "8.8.3.3.").line
         assert.are.equal(3672, line)
     end)
     it("joins a wrapped row's title", function()
         local content = read_fixture(rfc9110)
         local start_idx = toc.find_toc_start(content)
         local entries = toc.extract_toc_entries(content, start_idx)
-        local title = nil
-        for _, e in ipairs(entries) do
-            if e.number == "8.8.3.3." then
-                title = e.title
-            end
-        end
+        local title = find_entry(entries, "number", "8.8.3.3.").title
         assert.are.equal("Example: Entity Tags Varying on Content-Negotiated Resources", title)
+    end)
+    it("finds the body line for an appendix row", function()
+        local content = read_fixture(rfc9110)
+        local start_idx = toc.find_toc_start(content)
+        local entries = toc.extract_toc_entries(content, start_idx)
+        local line = find_entry(entries, "number", "Appendix A.").line
+        assert.are.equal(9748, line)
+    end)
+    it("finds the body line for an appendix subsection", function()
+        local content = read_fixture(rfc9110)
+        local start_idx = toc.find_toc_start(content)
+        local entries = toc.extract_toc_entries(content, start_idx)
+        local line = find_entry(entries, "number", "B.1.").line
+        assert.are.equal(9980, line)
+    end)
+    it("finds the body line for a back-matter row", function()
+        local content = read_fixture(rfc9110)
+        local start_idx = toc.find_toc_start(content)
+        local entries = toc.extract_toc_entries(content, start_idx)
+        local line = find_entry(entries, "title", "Index").line
+        assert.are.equal(10217, line)
     end)
 end)
