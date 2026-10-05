@@ -2,6 +2,9 @@ local toc = require("must.toc")
 
 local rfc2616 = "rfc2616.txt"
 local rfc9110 = "rfc9110.txt"
+local rfc1945 = "rfc1945.txt"
+local rfc3986 = "rfc3986.txt"
+local rfc791 = "rfc791.txt"
 
 local function read_fixture(name)
     local lines = {}
@@ -93,5 +96,26 @@ describe("extract_toc_entries", function()
         local entries = toc.extract_toc_entries(content, start_idx)
         local line = find_entry(entries, "title", "Index").line
         assert.are.equal(10217, line)
+    end)
+    it("matches rows with a gap before the page number", function()
+        local content = read_fixture(rfc1945)
+        local start_idx = toc.find_toc_start(content)
+        local entries = toc.extract_toc_entries(content, start_idx)
+        local line = find_entry(entries, "number", "1.1").line
+        assert.are.equal(177, line)
+    end)
+    it("matches rows with spaced dot leaders", function()
+        local content = read_fixture(rfc3986)
+        local start_idx = toc.find_toc_start(content)
+        local entries = toc.extract_toc_entries(content, start_idx)
+        local line = find_entry(entries, "number", "1.1.").line
+        assert.are.equal(203, line)
+    end)
+    it("matches column-0 rows with a page number", function()
+        local content = read_fixture(rfc791)
+        local start_idx = toc.find_toc_start(content)
+        local entries = toc.extract_toc_entries(content, start_idx)
+        local line = find_entry(entries, "number", "2.").line
+        assert.are.equal(475, line)
     end)
 end)
