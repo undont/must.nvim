@@ -24,6 +24,7 @@ function M.request(rfc_num)
             end
             -- remove the unnecessary form feed
             local body = res.body:gsub("\f", "")
+            body = body:gsub("^\u{FEFF}", "")
             local contents = vim.split(body, "\n")
             buf = vim.api.nvim_create_buf(true, true)
             -- set the bufhidden opt to 'wipe' so buf is removed
