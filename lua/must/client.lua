@@ -15,6 +15,11 @@ function M.request(rfc_num)
         {},
         vim.schedule_wrap(function(err, res)
             if err then
+                if err:match("404") then
+                    vim.notify("must: requested RFC does not exist", vim.log.levels.WARN)
+                else
+                    vim.notify(err, vim.log.levels.ERROR)
+                end
                 return
             end
             -- remove the unnecessary form feed
