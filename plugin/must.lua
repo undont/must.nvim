@@ -1,19 +1,25 @@
 require("must.toc")
 require("must.client")
 
-local toc_win = nil
+local toc_map = {}
 
 vim.api.nvim_create_user_command("Must", function(cmd)
     if cmd.args == "toc" then
-        local t = require("must.toc")
+        local toc_module = require("must.toc")
+        local toc_tabpage = vim.api.nvim_get_current_tabpage()
         -- toggle and reset if win already exists
-        if toc_win then
-            vim.api.nvim_win_close(toc_win, true)
-            toc_win = nil
+        if toc_map[toc_tabpage] then
+            vim.api.nvim_win_close(toc_map[toc_tabpage], true)
+            toc_map[toc_tabpage] = nil
             return
         end
         local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-        local toc_entries = t.extract_toc_entries(lines, t.find_toc_start(lines))
+        local toc_start = toc_module.find_toc_start(lines)
+        if not toc_start then
+            vim.notify("must: no Table of Contents found", vim.log.levels.WARN)
+            return
+        end
+        local toc_entries = toc_module.extract_toc_entries(lines, toc_start)
         local entries = {}
         for _, e in ipairs(toc_entries) do
             -- build entries into the table
@@ -22,21 +28,34 @@ vim.api.nvim_create_user_command("Must", function(cmd)
         local rfc_win = vim.api.nvim_get_current_win()
         local toc_buf = vim.api.nvim_create_buf(false, true)
         vim.api.nvim_buf_set_lines(toc_buf, 0, -1, false, entries)
-        toc_win = vim.api.nvim_open_win(toc_buf, true, { split = "right", width = 55 })
-        -- set toc_win back to nil if the user closed the ToC
-        -- with a different method than :Must toc
+        toc_map[toc_tabpage] = vim.api.nvim_open_win(toc_buf, true, { split = "right", width = 55 })
+        -- close plugin if only ToC left behind
+        -- rfc + ToC is valid
+        -- rfc on its own is valid
+        -- ToC on its own is INVALID
         vim.api.nvim_create_autocmd("WinClosed", {
-            pattern = tostring(toc_win),
+            pattern = tostring(rfc_win),
+            callback = vim.schedule_wrap(function()
+                if toc_map[toc_tabpage] then
+                    vim.api.nvim_win_close(toc_map[toc_tabpage], true)
+                end
+            end),
+        })
+        -- set toc_map[toc_tabpage] back to nil if the user
+        -- closed the ToC with a different method than :Must toc
+        vim.api.nvim_create_autocmd("WinClosed", {
+            pattern = tostring(toc_map[toc_tabpage]),
             callback = function()
-                toc_win = nil
+                toc_map[toc_tabpage] = nil
             end,
         })
         -- keymap for jumping to body heading from ToC
         vim.keymap.set("n", "<CR>", function()
-            local pos = vim.api.nvim_win_get_cursor(toc_win)
+            local pos = vim.api.nvim_win_get_cursor(toc_map[toc_tabpage])
             local line = { toc_entries[pos[1]].line, 0 }
             vim.api.nvim_win_set_cursor(rfc_win, line)
         end, { buf = toc_buf })
+
         -- fetch if :Must is followed by <number>
     elseif cmd.args:match("^%d+$") then
         local c = require("must.client")
