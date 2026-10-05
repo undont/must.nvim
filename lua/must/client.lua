@@ -26,7 +26,10 @@ function M.request(rfc_num)
             local body = res.body:gsub("\f", "")
             local contents = vim.split(body, "\n")
             buf = vim.api.nvim_create_buf(true, true)
+            -- set the bufhidden opt to 'wipe' so buf is removed
+            -- from :ls! when it's closed
             vim.bo[buf].bufhidden = "wipe"
+            vim.bo[buf].filetype = "rfc"
             vim.api.nvim_buf_set_lines(buf, 0, -1, false, contents)
             -- create a new tab initialised with the contents
             -- and an appropriate name

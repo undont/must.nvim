@@ -1,5 +1,7 @@
 local M = {}
 
+-- ToC headers can vary in casing/whitespace, this function
+-- normalises and then returns the starting line number
 ---@param lines string[]
 function M.find_toc_start(lines)
     for i, line in ipairs(lines) do
@@ -16,16 +18,22 @@ end
 ---@return table
 function M.extract_toc_entries(content, start_idx)
     local res = {}
+    -- entry rows are captured in the order they appear, each `not number`
+    -- branch of this loop is checking for a different type of row
+    -- 1. "1. Introduction"
+    -- 2. "Appendix A. Collected ABNF"
+    -- 3. "B.1. Changes from RFC ..."
+    -- 4. "Index"
     for i = start_idx, #content do
         local line = content[i]
-        local number, title = line:match("^%s*([%d%.]+)%s+(.-)[%s%.]*%d*$")
-        if not number then
+        local number, title = line:match("^%s*([%d%.]+)%s+(.-)[%s%.]*%d*$") -- 1
+        if not number then -- 2
             number, title = line:match("^%s*(Appendix%s*%u%.)%s+(.-)[%s%.]*%d*$")
         end
-        if not number then
+        if not number then -- 3
             number, title = line:match("^%s*(%u%.[%d%.]+)%s+(.-)%s*%.*$")
         end
-        if not number then
+        if not number then -- 4
             title = line:match("^%s%s%s(%u.+)$")
             number = title and ""
         end
@@ -33,6 +41,9 @@ function M.extract_toc_entries(content, start_idx)
         local indented_more = #line:match("^%s*") > #prev:match("^%s*")
         local prev_numbered = prev:match("^%s*%d") ~= nil
         local numbered = line:match("^%s*%d") ~= nil
+        -- break out of the loop if the ToC is finished
+        -- concluding line is either starting with a digit
+        -- in column 0 unless it ends in a page number
         if line:match("^%d") and not line:match("%d$") then
             break
         end
@@ -41,6 +52,8 @@ function M.extract_toc_entries(content, start_idx)
             if target then
                 table.insert(res, { number = number, title = title, line = target })
             end
+            -- if a ToC entry spans over two lines,
+            -- append it to the previous entry's title
         elseif indented_more and prev_numbered and not numbered then
             line = line:match("^%s*(.-)%s*$")
             res[#res].title = res[#res].title .. " " .. line
@@ -49,6 +62,8 @@ function M.extract_toc_entries(content, start_idx)
     return res
 end
 
+-- starts after its own ToC entry and searches for
+-- the heading in the body of the RFC
 ---@param content string[]
 ---@param after_index integer
 ---@param section_num string
