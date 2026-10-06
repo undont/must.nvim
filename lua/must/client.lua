@@ -1,8 +1,22 @@
 local M = {}
 
 local base_url = "https://www.rfc-editor.org/rfc/"
+local must_tab = nil
 
 -- TODO: add a caching layer to the client
+
+-- create a new tab initialised with the contents
+-- and an appropriate name, shared between all RFCs
+---@param buf integer
+local function show(buf)
+    if must_tab and vim.api.nvim_tabpage_is_valid(must_tab) then
+        vim.api.nvim_set_current_tabpage(must_tab)
+        vim.api.nvim_set_current_buf(buf)
+    else
+        vim.cmd(":tab sbuffer " .. buf)
+        must_tab = vim.api.nvim_get_current_tabpage()
+    end
+end
 
 --- the only network request in the plugin
 --- handles tab/buffer creation, and jumping to
@@ -13,8 +27,7 @@ function M.request(rfc_num, on_open)
     local buf = vim.fn.bufnr("^must://RFC " .. rfc_num .. "$")
     -- check if this RFC is already open
     if buf ~= -1 then
-        local win_num = vim.fn.win_findbuf(buf)
-        vim.api.nvim_set_current_win(win_num[1])
+        show(buf)
         if on_open then
             on_open()
         end
@@ -38,15 +51,10 @@ function M.request(rfc_num, on_open)
             body = body:gsub("^\u{FEFF}", "")
             local contents = vim.split(body, "\n")
             buf = vim.api.nvim_create_buf(true, true)
-            -- set the bufhidden opt to 'wipe' so buf is removed
-            -- from :ls! when it's closed
-            vim.bo[buf].bufhidden = "wipe"
             vim.bo[buf].filetype = "rfc"
             vim.api.nvim_buf_set_lines(buf, 0, -1, false, contents)
-            -- create a new tab initialised with the contents
-            -- and an appropriate name
-            vim.cmd(":tab sbuffer " .. buf)
             vim.api.nvim_buf_set_name(buf, "must://RFC " .. rfc_num)
+            show(buf)
             if on_open then
                 on_open()
             end
