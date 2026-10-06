@@ -2,7 +2,7 @@ require("must.toc")
 require("must.client")
 
 local toc_map = {}
-local cursor_pos = nil
+local cursor_pos = {}
 
 vim.api.nvim_create_user_command("Must", function(cmd)
     if cmd.args == "toc" then
@@ -10,12 +10,12 @@ vim.api.nvim_create_user_command("Must", function(cmd)
         local toc_tabpage = vim.api.nvim_get_current_tabpage()
         -- toggle and reset if win already exists
         if toc_map[toc_tabpage] then
-            cursor_pos = vim.api.nvim_win_get_cursor(toc_map[toc_tabpage])
             vim.api.nvim_win_close(toc_map[toc_tabpage], true)
             toc_map[toc_tabpage] = nil
             return
         end
         local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+        local buf_name = vim.api.nvim_buf_get_name(0)
         local toc_entries = toc.get_entries(lines)
         if not toc_entries then
             vim.notify("must: no Table of Contents found", vim.log.levels.WARN)
@@ -28,10 +28,14 @@ vim.api.nvim_create_user_command("Must", function(cmd)
         end
         local rfc_win = vim.api.nvim_get_current_win()
         local toc_buf = vim.api.nvim_create_buf(false, true)
+        -- set the bufhidden opt to 'wipe' so buf is removed
+        -- from :ls! when it's closed
+        vim.bo[toc_buf].bufhidden = "wipe"
+        vim.api.nvim_buf_set_name(toc_buf, buf_name .. " ToC")
         vim.api.nvim_buf_set_lines(toc_buf, 0, -1, false, entries)
         toc_map[toc_tabpage] = vim.api.nvim_open_win(toc_buf, true, { split = "right", width = 55 })
-        if cursor_pos then
-            vim.api.nvim_win_set_cursor(toc_map[toc_tabpage], cursor_pos)
+        if cursor_pos[toc_tabpage] then
+            vim.api.nvim_win_set_cursor(toc_map[toc_tabpage], cursor_pos[toc_tabpage])
         end
         -- close plugin if only ToC left behind
         -- rfc + ToC is valid
@@ -50,7 +54,7 @@ vim.api.nvim_create_user_command("Must", function(cmd)
         vim.api.nvim_create_autocmd("WinClosed", {
             pattern = tostring(toc_map[toc_tabpage]),
             callback = function()
-                cursor_pos = vim.api.nvim_win_get_cursor(toc_map[toc_tabpage])
+                cursor_pos[toc_tabpage] = vim.api.nvim_win_get_cursor(toc_map[toc_tabpage])
                 toc_map[toc_tabpage] = nil
             end,
         })

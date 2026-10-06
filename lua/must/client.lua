@@ -10,7 +10,7 @@ local base_url = "https://www.rfc-editor.org/rfc/"
 ---@param rfc_num string
 ---@param on_open fun()|nil
 function M.request(rfc_num, on_open)
-    local buf = vim.fn.bufnr("^RFC " .. rfc_num .. "$")
+    local buf = vim.fn.bufnr("^must://RFC " .. rfc_num .. "$")
     -- check if this RFC is already open
     if buf ~= -1 then
         local win_num = vim.fn.win_findbuf(buf)
@@ -46,7 +46,7 @@ function M.request(rfc_num, on_open)
             -- create a new tab initialised with the contents
             -- and an appropriate name
             vim.cmd(":tab sbuffer " .. buf)
-            vim.api.nvim_buf_set_name(buf, "RFC " .. rfc_num)
+            vim.api.nvim_buf_set_name(buf, "must://RFC " .. rfc_num)
             if on_open then
                 on_open()
             end
