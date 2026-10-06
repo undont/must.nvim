@@ -26,7 +26,7 @@ local streams = {
     "Network Working Group",
 }
 
--- section footers
+-- page footers
 vim.cmd([[syntax match rfcPage /\[Page\s\d\+\]/]])
 vim.cmd([[highlight default link rfcPage Comment]])
 

@@ -2,6 +2,12 @@ local M = {}
 
 local base_url = "https://www.rfc-editor.org/rfc/"
 
+-- TODO: add a caching layer to the client
+
+--- the only network request in the plugin
+--- handles tab/buffer creation, and jumping to
+--- already open RFCs
+---@param rfc_num string
 function M.request(rfc_num)
     local buf = vim.fn.bufnr("^RFC " .. rfc_num .. "$")
     -- check if this RFC is already open
@@ -24,6 +30,7 @@ function M.request(rfc_num)
             end
             -- remove the unnecessary form feed
             local body = res.body:gsub("\f", "")
+            -- remove the byte-order marks from the top of the file
             body = body:gsub("^\u{FEFF}", "")
             local contents = vim.split(body, "\n")
             buf = vim.api.nvim_create_buf(true, true)

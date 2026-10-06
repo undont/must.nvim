@@ -23,7 +23,7 @@ end
 ---@param content string[]
 ---@param start_idx integer
 ---@return must.TocEntry[]
-function M.extract_toc_entries(content, start_idx)
+local function extract_toc_entries(content, start_idx)
     local res = {}
     -- entry rows are captured in the order they appear, each `not number`
     -- branch of this loop is checking for a different type of row
@@ -105,7 +105,7 @@ function M.get_entries(lines)
     if not toc_start then
         return nil
     end
-    return M.extract_toc_entries(lines, toc_start)
+    return extract_toc_entries(lines, toc_start)
 end
 
 return M
