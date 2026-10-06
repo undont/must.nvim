@@ -5,7 +5,7 @@ local toc_map = {}
 
 vim.api.nvim_create_user_command("Must", function(cmd)
     if cmd.args == "toc" then
-        local toc_module = require("must.toc")
+        local toc = require("must.toc")
         local toc_tabpage = vim.api.nvim_get_current_tabpage()
         -- toggle and reset if win already exists
         if toc_map[toc_tabpage] then
@@ -14,12 +14,11 @@ vim.api.nvim_create_user_command("Must", function(cmd)
             return
         end
         local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-        local toc_start = toc_module.find_toc_start(lines)
-        if not toc_start then
+        local toc_entries = toc.get_entries(lines)
+        if not toc_entries then
             vim.notify("must: no Table of Contents found", vim.log.levels.WARN)
             return
         end
-        local toc_entries = toc_module.extract_toc_entries(lines, toc_start)
         local entries = {}
         for _, e in ipairs(toc_entries) do
             -- build entries into the table

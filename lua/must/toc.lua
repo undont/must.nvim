@@ -1,8 +1,15 @@
 local M = {}
 
--- ToC headers can vary in casing/whitespace, this function
--- normalises and then returns the starting line number
+---@class must.TocEntry
+---@field number string
+---@field title string
+---@field line integer
+---@field toc_line integer
+
+--- ToC headers can vary in casing/whitespace, this function
+--- normalises and then returns the starting line number
 ---@param lines string[]
+---@return integer|nil
 function M.find_toc_start(lines)
     for i, line in ipairs(lines) do
         line = line:lower()
@@ -15,7 +22,7 @@ end
 
 ---@param content string[]
 ---@param start_idx integer
----@return table
+---@return must.TocEntry[]
 function M.extract_toc_entries(content, start_idx)
     local res = {}
     -- entry rows are captured in the order they appear, each `not number`
@@ -41,8 +48,8 @@ function M.extract_toc_entries(content, start_idx)
         local indented_more = #line:match("^%s*") > #prev:match("^%s*")
         local prev_numbered = prev:match("^%s*%d") ~= nil
         local numbered = line:match("^%s*%d") ~= nil
-        -- break out of the loop if the ToC is finished
-        -- concluding line is either starting with a digit
+        -- break out of the loop if the ToC is finished, i.e.
+        -- concluding line is starting with a digit
         -- in column 0 unless it ends in a page number
         if line:match("^%d") and not line:match("%d$") then
             break
@@ -50,7 +57,12 @@ function M.extract_toc_entries(content, start_idx)
         if number and title then
             local target = M.find_body_heading(content, i, number, title)
             if target then
-                table.insert(res, { number = number, title = title, line = target })
+                table.insert(res, {
+                    number = number,
+                    title = title,
+                    line = target,
+                    toc_line = i,
+                })
             end
             -- if a ToC entry spans over two lines,
             -- append it to the previous entry's title
@@ -62,12 +74,13 @@ function M.extract_toc_entries(content, start_idx)
     return res
 end
 
--- starts after its own ToC entry and searches for
--- the heading in the body of the RFC
+--- starts after its own ToC entry and searches for
+--- the heading in the body of the RFC
 ---@param content string[]
 ---@param after_index integer
 ---@param section_num string
 ---@param title string
+---@return integer|nil
 function M.find_body_heading(content, after_index, section_num, title)
     for i = after_index + 1, #content do
         local line = content[i]
@@ -80,6 +93,19 @@ function M.find_body_heading(content, after_index, section_num, title)
             end
         end
     end
+end
+
+--- wrapper function for find_toc_start and extract_toc_entries
+--- this should be the only way those are used outside of this
+--- module
+---@param lines string[]
+---@return must.TocEntry[]|nil
+function M.get_entries(lines)
+    local toc_start = M.find_toc_start(lines)
+    if not toc_start then
+        return nil
+    end
+    return M.extract_toc_entries(lines, toc_start)
 end
 
 return M
