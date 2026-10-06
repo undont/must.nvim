@@ -27,25 +27,34 @@ local function follow_toc_entry(entries, pos)
     end
 end
 
+---@param entries must.TocEntry[]
+---@param section string
+---@return boolean|nil
+local function jump_to_section(entries, section)
+    for _, e in ipairs(entries) do
+        local entry = e.section:gsub("%.$", "")
+        if entry == section then
+            vim.api.nvim_win_set_cursor(0, { e.line, 0 })
+            return true
+        end
+    end
+end
+
 ---@param line string
 ---@param pos [integer, integer]
 ---@param entries must.TocEntry[]
 ---@return boolean|nil
 local function follow_section_ref(line, pos, entries)
     local section_regex = "[Ss]ection%s+(%d[%d%.]*)"
-    local first, last, section_num = line:find(section_regex)
+    local first, last, section = line:find(section_regex)
     while first do
         if pos[2] + 1 >= first and pos[2] + 1 <= last then
-            section_num = section_num:gsub("%.$", "")
-            for _, e in ipairs(entries) do
-                local entry_number = e.number:gsub("%.$", "")
-                if entry_number == section_num then
-                    vim.api.nvim_win_set_cursor(0, { e.line, 0 })
-                    return true
-                end
+            section = section:gsub("%.$", "")
+            if jump_to_section(entries, section) then
+                return true
             end
         end
-        first, last, section_num = line:find(section_regex, last + 1)
+        first, last, section = line:find(section_regex, last + 1)
     end
 end
 

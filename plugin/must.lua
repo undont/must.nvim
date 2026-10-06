@@ -22,7 +22,7 @@ vim.api.nvim_create_user_command("Must", function(cmd)
         local entries = {}
         for _, e in ipairs(toc_entries) do
             -- build entries into the table
-            table.insert(entries, e.number .. " " .. e.title)
+            table.insert(entries, e.section .. " " .. e.title)
         end
         local rfc_win = vim.api.nvim_get_current_win()
         local toc_buf = vim.api.nvim_create_buf(false, true)

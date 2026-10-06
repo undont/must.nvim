@@ -8,12 +8,16 @@ local base_url = "https://www.rfc-editor.org/rfc/"
 --- handles tab/buffer creation, and jumping to
 --- already open RFCs
 ---@param rfc_num string
-function M.request(rfc_num)
+---@param on_open fun()|nil
+function M.request(rfc_num, on_open)
     local buf = vim.fn.bufnr("^RFC " .. rfc_num .. "$")
     -- check if this RFC is already open
     if buf ~= -1 then
         local win_num = vim.fn.win_findbuf(buf)
         vim.api.nvim_set_current_win(win_num[1])
+        if on_open then
+            on_open()
+        end
         return
     end
     vim.net.request(
@@ -43,6 +47,9 @@ function M.request(rfc_num)
             -- and an appropriate name
             vim.cmd(":tab sbuffer " .. buf)
             vim.api.nvim_buf_set_name(buf, "RFC " .. rfc_num)
+            if on_open then
+                on_open()
+            end
         end)
     )
 end
