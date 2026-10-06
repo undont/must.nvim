@@ -31,7 +31,7 @@ end
 describe("find_toc_start", function()
     it("finds a real header line", function()
         local lines = read_fixture(rfc2616)
-        assert.are.equal(63, toc.find_toc_start(lines))
+        assert.are.equal(63, toc._find_toc_start(lines))
     end)
     it("finds an indented header", function()
         local lines = {
@@ -39,18 +39,18 @@ describe("find_toc_start", function()
             "   ",
             "   Table of Contents",
         }
-        assert.are.equal(3, toc.find_toc_start(lines))
+        assert.are.equal(3, toc._find_toc_start(lines))
     end)
 end)
 
 describe("find_body_heading", function()
     it("correctly skips the ToC row", function()
         local lines = read_fixture(rfc2616)
-        assert.are.equal(628, toc.find_body_heading(lines, 69, "1.4", "Overall Operation"))
+        assert.are.equal(628, toc._find_body_heading(lines, 69, "1.4", "Overall Operation"))
     end)
     it("needs the title to tell `1` from `1.1` etc", function()
         local lines = read_fixture(rfc2616)
-        assert.are.equal(359, toc.find_body_heading(lines, 65, "1", "Introduction"))
+        assert.are.equal(359, toc._find_body_heading(lines, 65, "1", "Introduction"))
     end)
 end)
 

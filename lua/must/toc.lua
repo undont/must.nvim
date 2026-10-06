@@ -10,7 +10,7 @@ local M = {}
 --- normalises and then returns the starting line number
 ---@param lines string[]
 ---@return integer|nil
-function M.find_toc_start(lines)
+function M._find_toc_start(lines)
     for i, line in ipairs(lines) do
         line = line:lower()
         line = line:match("^%s*(.-)%s*$")
@@ -55,7 +55,7 @@ local function extract_toc_entries(content, start_idx)
             break
         end
         if section and title then
-            local target = M.find_body_heading(content, i, section, title)
+            local target = M._find_body_heading(content, i, section, title)
             if target then
                 table.insert(res, {
                     section = section,
@@ -81,7 +81,7 @@ end
 ---@param section string
 ---@param title string
 ---@return integer|nil
-function M.find_body_heading(content, after_index, section, title)
+function M._find_body_heading(content, after_index, section, title)
     for i = after_index + 1, #content do
         local line = content[i]
         line = line:match("^%s*(.*)")
@@ -101,7 +101,7 @@ end
 ---@param lines string[]
 ---@return must.TocEntry[]|nil
 function M.get_entries(lines)
-    local toc_start = M.find_toc_start(lines)
+    local toc_start = M._find_toc_start(lines)
     if not toc_start then
         return nil
     end
