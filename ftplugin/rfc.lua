@@ -47,9 +47,22 @@ end
 local function follow_section_ref(line, pos, entries)
     local section_regex = "[Ss]ection%s+(%d[%d%.]*)"
     local first, last, section = line:find(section_regex)
-    while first do
+    while first and last do
         if pos[2] + 1 >= first and pos[2] + 1 <= last then
             section = section:gsub("%.$", "")
+            local new_rfc = line:match("^%s+of%s+RFC%s*(%d+)", last + 1)
+            if new_rfc then
+                require("must.client").request(new_rfc, function()
+                    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+                    local new_rfc_entries = require("must.toc").get_entries(lines)
+                    if new_rfc_entries then
+                        if jump_to_section(new_rfc_entries, section) then
+                            return
+                        end
+                    end
+                end)
+                return true
+            end
             if jump_to_section(entries, section) then
                 return true
             end
