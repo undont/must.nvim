@@ -91,3 +91,8 @@ vim.keymap.set("n", "gd", function()
     end
     vim.notify("must: nothing to follow under cursor", vim.log.levels.WARN)
 end, { buf = 0 })
+
+-- keymap for opening/closing ToC
+vim.keymap.set("n", "\\", function()
+    vim.cmd(":Must toc")
+end, { buf = 0 })

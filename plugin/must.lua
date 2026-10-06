@@ -2,6 +2,7 @@ require("must.toc")
 require("must.client")
 
 local toc_map = {}
+local cursor_pos = nil
 
 vim.api.nvim_create_user_command("Must", function(cmd)
     if cmd.args == "toc" then
@@ -9,6 +10,7 @@ vim.api.nvim_create_user_command("Must", function(cmd)
         local toc_tabpage = vim.api.nvim_get_current_tabpage()
         -- toggle and reset if win already exists
         if toc_map[toc_tabpage] then
+            cursor_pos = vim.api.nvim_win_get_cursor(toc_map[toc_tabpage])
             vim.api.nvim_win_close(toc_map[toc_tabpage], true)
             toc_map[toc_tabpage] = nil
             return
@@ -28,6 +30,9 @@ vim.api.nvim_create_user_command("Must", function(cmd)
         local toc_buf = vim.api.nvim_create_buf(false, true)
         vim.api.nvim_buf_set_lines(toc_buf, 0, -1, false, entries)
         toc_map[toc_tabpage] = vim.api.nvim_open_win(toc_buf, true, { split = "right", width = 55 })
+        if cursor_pos then
+            vim.api.nvim_win_set_cursor(toc_map[toc_tabpage], cursor_pos)
+        end
         -- close plugin if only ToC left behind
         -- rfc + ToC is valid
         -- rfc on its own is valid
@@ -45,6 +50,7 @@ vim.api.nvim_create_user_command("Must", function(cmd)
         vim.api.nvim_create_autocmd("WinClosed", {
             pattern = tostring(toc_map[toc_tabpage]),
             callback = function()
+                cursor_pos = vim.api.nvim_win_get_cursor(toc_map[toc_tabpage])
                 toc_map[toc_tabpage] = nil
             end,
         })
@@ -53,6 +59,11 @@ vim.api.nvim_create_user_command("Must", function(cmd)
             local pos = vim.api.nvim_win_get_cursor(toc_map[toc_tabpage])
             local line = { toc_entries[pos[1]].line, 0 }
             vim.api.nvim_win_set_cursor(rfc_win, line)
+        end, { buf = toc_buf })
+
+        -- keymap for opening/closing ToC
+        vim.keymap.set("n", "\\", function()
+            vim.cmd(":Must toc")
         end, { buf = toc_buf })
 
         -- fetch if :Must is followed by <number>
