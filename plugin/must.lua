@@ -33,6 +33,8 @@ vim.api.nvim_create_user_command("Must", function(cmd)
         vim.bo[toc_buf].bufhidden = "wipe"
         vim.api.nvim_buf_set_name(toc_buf, buf_name .. " ToC")
         vim.api.nvim_buf_set_lines(toc_buf, 0, -1, false, entries)
+        -- modifiable must be set false AFTER writing content
+        vim.bo[toc_buf].modifiable = false
         toc_map[toc_tabpage] = vim.api.nvim_open_win(toc_buf, true, { split = "right", width = 55 })
         if cursor_pos[toc_tabpage] then
             vim.api.nvim_win_set_cursor(toc_map[toc_tabpage], cursor_pos[toc_tabpage])

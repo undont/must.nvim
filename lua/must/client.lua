@@ -50,6 +50,8 @@ function M.request(rfc_num, on_open)
             if on_open then
                 on_open()
             end
+            -- modifiable must be set false AFTER writing content
+            vim.bo[buf].modifiable = false
         end)
     )
 end
