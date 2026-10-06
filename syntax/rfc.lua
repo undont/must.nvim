@@ -1,18 +1,18 @@
 local requirement_keywords = {
-    "MUST",
     "MUST NOT",
-    "REQUIRED",
+    "MUST",
     "NOT REQUIRED",
-    "SHALL",
+    "REQUIRED",
     "SHALL NOT",
-    "SHOULD",
+    "SHALL",
     "SHOULD NOT",
-    "RECOMMENDED",
+    "SHOULD",
     "NOT RECOMMENDED",
-    "MAY",
+    "RECOMMENDED",
     "MAY NOT",
-    "OPTIONAL",
+    "MAY",
     "NOT OPTIONAL",
+    "OPTIONAL",
 }
 
 local streams = {
@@ -26,6 +26,30 @@ local streams = {
     "Network Working Group",
 }
 
+local http_methods = {
+    "GET",
+    "HEAD",
+    "PUT",
+    "DELETE",
+    "PATCH",
+    "POST",
+    "CONNECT",
+    "OPTIONS",
+    "TRACE",
+}
+
+---@param group string
+---@param target string
+---@param colour? string
+local function bold_link(group, target, colour)
+    local hl = vim.api.nvim_get_hl(0, { name = target, link = false })
+    vim.api.nvim_set_hl(0, group, { fg = colour or hl.fg, bold = true, default = true })
+end
+
+-- parsing always starts one line above what's being drawn
+-- related to the requirement keywords vs. hard wrapping
+vim.cmd([[syntax sync minlines=1]])
+
 -- page footers
 vim.cmd([[syntax match rfcPage /\[Page\s\d\+\]/]])
 vim.cmd([[highlight default link rfcPage Comment]])
@@ -36,8 +60,16 @@ vim.cmd([[syntax match rfcBodyHeading /^\u\(\S\| \S\)*$/]])
 vim.cmd([[highlight default link rfcBodyHeading @markup.heading]])
 
 -- requirement keywords :)
-vim.cmd("syntax keyword rfcRequirementKeywords " .. table.concat(requirement_keywords, " "))
-vim.cmd([[highlight default link rfcRequirementKeywords @markup.strong]])
+local requirement_alternates = table.concat(requirement_keywords, "\\|")
+-- let a match continue running over hard wrapped lines
+requirement_alternates = requirement_alternates:gsub(" ", "\\_s\\+")
+local requirement_keywords_pattern = "\\<\\(" .. requirement_alternates .. "\\)\\>"
+vim.cmd("syntax match rfcRequirementKeywords /" .. requirement_keywords_pattern .. "/")
+bold_link("rfcRequirementKeywords", "Type")
+
+-- http methods
+vim.cmd("syntax keyword rfcHttpMethods " .. table.concat(http_methods, " "))
+bold_link("rfcHttpMethods", "String")
 
 -- references
 vim.cmd([[syntax match rfcReference /\[\(RFC\)\=\d\+\]/]])
