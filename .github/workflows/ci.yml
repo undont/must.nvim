@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  stylua:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: JohnnyMorganz/stylua-action@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: 2.5.2
+          args: --check .
+
+  busted:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: leafo/gh-actions-lua@v13
+        with:
+          luaVersion: "5.1"
+
+      - uses: leafo/gh-actions-luarocks@v6
+
+      - name: Install Test Dependencies
+        run: luarocks install busted
+
+      - name: Test
+        run: make test
+
+  luacheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: leafo/gh-actions-lua@v13
+        with:
+          luaVersion: "5.1"
+
+      - uses: leafo/gh-actions-luarocks@v6
+
+      - name: Install Luacheck
+        run: luarocks install luacheck
+
+      - name: Luacheck
+        run: make check
