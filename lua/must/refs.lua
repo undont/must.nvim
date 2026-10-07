@@ -13,6 +13,20 @@ function M.citation_under_cursor(line, pos)
     end
 end
 
+---@param line string
+---@param pos [integer, integer]
+---@return string|nil
+function M.rfc_under_cursor(line, pos)
+    local rfc_regex = "RFC%s*(%d+)"
+    local first, last, rfc_num = line:find(rfc_regex)
+    while first do
+        if pos[2] + 1 >= first and pos[2] + 1 <= last then
+            return rfc_num
+        end
+        first, last, rfc_num = line:find(rfc_regex, last + 1)
+    end
+end
+
 ---@param entries must.TocEntry[]
 ---@return integer|nil
 function M.reference_line(entries)

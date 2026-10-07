@@ -47,3 +47,26 @@ describe("section_ref", function()
         assert.are.equal("9111", new_rfc)
     end)
 end)
+
+describe("rfc_under_cursor", function()
+    it("returns the rfc when cursor is on its start", function()
+        local line = fixtures.read(fixtures.rfc9110)[27]
+        local ref = refs.rfc_under_cursor(line, { 27, 25 })
+        assert.are.equal("3864", ref)
+    end)
+    it("returns the rfc when cursor is on its end", function()
+        local line = fixtures.read(fixtures.rfc9110)[27]
+        local ref = refs.rfc_under_cursor(line, { 27, 32 })
+        assert.are.equal("3864", ref)
+    end)
+    it("returns nil when not stood on a real RFC", function()
+        local line = fixtures.read(fixtures.rfc9110)[27]
+        local ref = refs.rfc_under_cursor(line, { 27, 48 })
+        assert.are.equal(nil, ref)
+    end)
+    it("returns correct rfc when multiple are on one line", function()
+        local line = fixtures.read(fixtures.rfc9110)[435]
+        local ref = refs.rfc_under_cursor(line, { 435, 31 })
+        assert.are.equal("2616", ref)
+    end)
+end)

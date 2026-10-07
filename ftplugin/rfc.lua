@@ -4,14 +4,10 @@ local refs = require("must.refs")
 ---@param pos [integer, integer]
 ---@return boolean|nil
 local function follow_rfc_mention(line, pos)
-    local rfc_regex = "RFC%s*(%d+)"
-    local first, last, rfc_num = line:find(rfc_regex)
-    while first do
-        if pos[2] + 1 >= first and pos[2] + 1 <= last then
-            require("must.client").request(rfc_num)
-            return true
-        end
-        first, last, rfc_num = line:find("RFC%s*(%d+)", last + 1)
+    local rfc_num = refs.rfc_under_cursor(line, pos)
+    if rfc_num then
+        require("must.client").request(rfc_num)
+        return true
     end
 end
 
