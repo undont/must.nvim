@@ -16,7 +16,7 @@
 
 Run `:Must <number>` to open a new instance, which is opened in a shared tab for the session. Once inside, `:Must toc` or `\` will toggle open the Table of Contents (if the RFC has one). `gd` within the main content body jumps to sections within the body, other RFCs, and other sections in other RFCs based on the cursor's position.
 
-That's basically it, it's quite simple, and I don't have any grandiose plans to make it overly complex. Caching will be added later down the line.
+Caches RFCs locally at `stdpath("cache")/must/` with no expiry (they're pretty small `.txt` files). Clean the directory out manually if you ever want to get (a very little amount of) disk space back, I might add cache expiry later on.
 
 ## Installation
 
@@ -44,13 +44,13 @@ MiniDeps.add({
 
 ## Configuration
 
-Calling `setup` is entirely optional, defaults listed here. feel free to override any of the "keymap" ones with `false` if you want them disabled.
+Calling `setup` is entirely optional, defaults listed here. Feel free to override any of the "keymap" ones with `false` if you want them disabled.
 
 ```lua
 require("must").setup({
     -- keymaps
     jump_to = "gd",
-    toggle_toc = "\\",
+    toggle_toc = "\\", -- literal backslash
     open_toc_entry = "<CR>",
     toc = {
         split = "right", -- left/right
