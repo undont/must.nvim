@@ -96,9 +96,9 @@ local function follow_section_ref(line, pos, entries, lines)
     end
 end
 
+-- gd registered to jump to other RFCs (cursor on RFC) and
+-- section headings via ToC entries
 if config.jump_to then
-    -- gd registered to jump to other RFCs (cursor on RFC) and
-    -- section headings via ToC entries
     vim.keymap.set("n", config.jump_to, function()
         local line = vim.api.nvim_get_current_line()
         local pos = vim.api.nvim_win_get_cursor(0)
@@ -122,9 +122,17 @@ if config.jump_to then
     end, { buf = 0 })
 end
 
+-- keymap for opening/closing ToC
 if config.toggle_toc then
-    -- keymap for opening/closing ToC
     vim.keymap.set("n", config.toggle_toc, function()
         vim.cmd(":Must toc")
     end, { buf = 0 })
 end
+
+-- disable spellcheck squigglies in RFCs
+vim.api.nvim_create_autocmd("BufWinEnter", {
+    buffer = 0,
+    callback = function()
+        vim.opt_local.spell = false
+    end,
+})
