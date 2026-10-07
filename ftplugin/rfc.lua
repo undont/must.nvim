@@ -1,4 +1,5 @@
 local refs = require("must.refs")
+local config = require("must.config")
 
 ---@param line string
 ---@param pos [integer, integer]
@@ -95,31 +96,35 @@ local function follow_section_ref(line, pos, entries, lines)
     end
 end
 
--- gd registered to jump to other RFCs (cursor on RFC) and
--- section headings via ToC entries
-vim.keymap.set("n", "gd", function()
-    local line = vim.api.nvim_get_current_line()
-    local pos = vim.api.nvim_win_get_cursor(0)
-    if follow_rfc_mention(line, pos) then
-        return
-    end
-    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-    local entries = require("must.toc").get_entries(lines)
-    if entries then
-        if follow_toc_entry(entries, pos) then
+if config.jump_to then
+    -- gd registered to jump to other RFCs (cursor on RFC) and
+    -- section headings via ToC entries
+    vim.keymap.set("n", config.jump_to, function()
+        local line = vim.api.nvim_get_current_line()
+        local pos = vim.api.nvim_win_get_cursor(0)
+        if follow_rfc_mention(line, pos) then
             return
         end
-        if follow_section_ref(line, pos, entries, lines) then
-            return
+        local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+        local entries = require("must.toc").get_entries(lines)
+        if entries then
+            if follow_toc_entry(entries, pos) then
+                return
+            end
+            if follow_section_ref(line, pos, entries, lines) then
+                return
+            end
+            if follow_citation(line, pos, entries, lines) then
+                return
+            end
         end
-        if follow_citation(line, pos, entries, lines) then
-            return
-        end
-    end
-    vim.notify("must: nothing to follow under cursor", vim.log.levels.WARN)
-end, { buf = 0 })
+        vim.notify("must: nothing to follow under cursor", vim.log.levels.WARN)
+    end, { buf = 0 })
+end
 
--- keymap for opening/closing ToC
-vim.keymap.set("n", "\\", function()
-    vim.cmd(":Must toc")
-end, { buf = 0 })
+if config.toggle_toc then
+    -- keymap for opening/closing ToC
+    vim.keymap.set("n", config.toggle_toc, function()
+        vim.cmd(":Must toc")
+    end, { buf = 0 })
+end

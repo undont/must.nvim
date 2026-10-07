@@ -41,3 +41,20 @@ MiniDeps.add({
   source = "undont/must.nvim",
 })
 ```
+
+## Configuration
+
+Calling `setup` is entirely optional, defaults listed here. feel free to override any of the "keymap" ones with `false` if you want them disabled.
+
+```lua
+require("must").setup({
+    -- keymaps
+    jump_to = "gd",
+    toggle_toc = "\\",
+    open_toc_entry = "<CR>",
+    toc = {
+        split = "right", -- left/right
+        width = 55,      -- integer
+    },
+})
+```

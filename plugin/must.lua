@@ -1,5 +1,6 @@
-local c = require("must.client")
+local client = require("must.client")
 local toc = require("must.toc")
+local config = require("must.config")
 local toc_map = {}
 local cursor_pos = {}
 
@@ -36,7 +37,11 @@ local function open_toc(tabpage, focus)
     vim.api.nvim_buf_set_lines(toc_buf, 0, -1, false, entries)
     -- modifiable must be set false AFTER writing content
     vim.bo[toc_buf].modifiable = false
-    toc_map[tabpage] = vim.api.nvim_open_win(toc_buf, focus, { split = "right", width = 55 })
+    toc_map[tabpage] = vim.api.nvim_open_win(
+        toc_buf,
+        focus,
+        { split = config.toc.split, width = config.toc.width }
+    )
     if cursor_pos[rfc_buf] then
         vim.api.nvim_win_set_cursor(toc_map[tabpage], cursor_pos[rfc_buf])
     end
@@ -61,17 +66,22 @@ local function open_toc(tabpage, focus)
             toc_map[tabpage] = nil
         end,
     })
-    -- keymap for jumping to body heading from ToC
-    vim.keymap.set("n", "<CR>", function()
-        local pos = vim.api.nvim_win_get_cursor(toc_map[tabpage])
-        local line = { toc_entries[pos[1]].line, 0 }
-        vim.api.nvim_win_set_cursor(rfc_win, line)
-    end, { buf = toc_buf })
 
-    -- keymap for opening/closing ToC
-    vim.keymap.set("n", "\\", function()
-        vim.cmd(":Must toc")
-    end, { buf = toc_buf })
+    if config.open_toc_entry then
+        -- keymap for jumping to body heading from ToC
+        vim.keymap.set("n", config.open_toc_entry, function()
+            local pos = vim.api.nvim_win_get_cursor(toc_map[tabpage])
+            local line = { toc_entries[pos[1]].line, 0 }
+            vim.api.nvim_win_set_cursor(rfc_win, line)
+        end, { buf = toc_buf })
+    end
+
+    if config.toggle_toc then
+        -- keymap for opening/closing ToC
+        vim.keymap.set("n", config.toggle_toc, function()
+            vim.cmd(":Must toc")
+        end, { buf = toc_buf })
+    end
 end
 
 -- refresh the ToC on BufWinEnter to ensure ToC
@@ -101,6 +111,6 @@ vim.api.nvim_create_user_command("Must", function(cmd)
         open_toc(tabpage, true)
         -- fetch if :Must is followed by <number>
     elseif cmd.args:match("^%d+$") then
-        c.request(cmd.args)
+        client.request(cmd.args)
     end
 end, { nargs = 1 })
