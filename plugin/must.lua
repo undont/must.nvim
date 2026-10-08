@@ -54,6 +54,8 @@ local function open_toc(tabpage, focus)
         focus,
         { split = config.toc.split, width = config.toc.width }
     )
+    -- set spellcheck to false in the ToC
+    vim.wo[toc_map[tabpage]].spell = false
     if cursor_pos[rfc_buf] then
         vim.api.nvim_win_set_cursor(toc_map[tabpage], cursor_pos[rfc_buf])
     end
