@@ -5,6 +5,7 @@ M.rfc9110 = "rfc9110.txt"
 M.rfc1945 = "rfc1945.txt"
 M.rfc3986 = "rfc3986.txt"
 M.rfc791 = "rfc791.txt"
+M.rfc_index = "rfc-index.txt"
 
 ---@param name string
 ---@return string[]
@@ -16,10 +17,11 @@ function M.read(name)
     return lines
 end
 
----@param entries must.TocEntry[]
+---@generic T
+---@param entries T[]
 ---@param field string
 ---@param value string
----@return must.TocEntry|nil
+---@return T|nil
 function M.find_entry(entries, field, value)
     for _, e in ipairs(entries) do
         if e[field] == value then
