@@ -24,7 +24,7 @@ end
 ---@param start_idx integer
 ---@return must.TocEntry[]
 local function extract_toc_entries(content, start_idx)
-    local res = {}
+    local entries = {}
     -- entry rows are captured in the order they appear, each `not section`
     -- branch of this loop is checking for a different type of row
     -- 1. "1. Introduction"
@@ -57,7 +57,7 @@ local function extract_toc_entries(content, start_idx)
         if section and title then
             local target = M._find_body_heading(content, i, section, title)
             if target then
-                table.insert(res, {
+                table.insert(entries, {
                     section = section,
                     title = title,
                     line = target,
@@ -68,10 +68,10 @@ local function extract_toc_entries(content, start_idx)
             -- append it to the previous entry's title
         elseif indented_more and prev_numbered and not numbered then
             line = line:match("^%s*(.-)%s*$")
-            res[#res].title = res[#res].title .. " " .. line
+            entries[#entries].title = entries[#entries].title .. " " .. line
         end
     end
-    return res
+    return entries
 end
 
 --- starts after its own ToC entry and searches for
