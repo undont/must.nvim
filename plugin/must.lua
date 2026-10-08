@@ -2,10 +2,24 @@ local client = require("must.client")
 local toc = require("must.toc")
 local index = require("must.index")
 local config = require("must.config")
+
+--- namespace for the section extmark in open_toc
+local toc_ns = vim.api.nvim_create_namespace("must_toc")
+
 ---@type table<integer, integer>
 local toc_map = {}
+
+---@type table<integer, [integer, integer]>
 local cursor_pos = {}
-local toc_ns = vim.api.nvim_create_namespace("must_toc")
+
+---@param section string
+local function depth(section)
+    local n = 0
+    for _ in section:gmatch("[^.]+") do
+        n = n + 1
+    end
+    return n
+end
 
 ---@param tabpage integer
 local function close_toc(tabpage)
@@ -14,7 +28,7 @@ local function close_toc(tabpage)
 end
 
 --- opens up ToC and handles assigning the `<CR>` keymap and
---- the "\\" keymap for toggling CLOSED
+--- the "\" keymap for toggling CLOSED
 ---@param tabpage integer
 ---@param focus boolean
 local function open_toc(tabpage, focus)
@@ -25,10 +39,17 @@ local function open_toc(tabpage, focus)
         vim.notify("must: no Table of Contents found", vim.log.levels.WARN)
         return
     end
+    ---@type table<integer, string>
     local entries = {}
+    ---@type table<integer, integer>
+    local indents = {}
     for _, e in ipairs(toc_entries) do
+        -- calculate indent (leading whitespace)
+        -- multiplier is for indent size
+        local indent = string.rep(" ", (depth(e.section) - 1) * 2)
+        table.insert(indents, #indent)
         -- build entries into the table
-        table.insert(entries, e.section .. " " .. e.title)
+        table.insert(entries, indent .. e.section .. " " .. e.title)
     end
     local rfc_win = vim.api.nvim_get_current_win()
     local rfc_buf = vim.api.nvim_get_current_buf()
@@ -43,8 +64,8 @@ local function open_toc(tabpage, focus)
             toc_buf,
             toc_ns,
             i - 1,
-            0,
-            { end_col = #e.section, hl_group = "@markup.heading" }
+            indents[i],
+            { end_col = indents[i] + #e.section, hl_group = "@markup.heading" }
         )
     end
     -- modifiable must be set false AFTER writing content
