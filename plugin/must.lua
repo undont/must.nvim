@@ -2,8 +2,10 @@ local client = require("must.client")
 local toc = require("must.toc")
 local index = require("must.index")
 local config = require("must.config")
+---@type table<integer, integer>
 local toc_map = {}
 local cursor_pos = {}
+local toc_ns = vim.api.nvim_create_namespace("must_toc")
 
 ---@param tabpage integer
 local function close_toc(tabpage)
@@ -36,6 +38,15 @@ local function open_toc(tabpage, focus)
     vim.bo[toc_buf].bufhidden = "wipe"
     vim.api.nvim_buf_set_name(toc_buf, buf_name .. " ToC")
     vim.api.nvim_buf_set_lines(toc_buf, 0, -1, false, entries)
+    for i, e in ipairs(toc_entries) do
+        vim.api.nvim_buf_set_extmark( -- ToC section
+            toc_buf,
+            toc_ns,
+            i - 1,
+            0,
+            { end_col = #e.section, hl_group = "@markup.heading" }
+        )
+    end
     -- modifiable must be set false AFTER writing content
     vim.bo[toc_buf].modifiable = false
     toc_map[tabpage] = vim.api.nvim_open_win(
