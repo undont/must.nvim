@@ -4,6 +4,7 @@
 
 **RFC inside Neovim, because why not?**
 
+[![Licence](https://img.shields.io/github/license/undont/differ.nvim?style=flat&label=licence&color=1A3C72)](LICENCE)
 [![Lua](https://img.shields.io/badge/Lua-5.1-2C2D72?style=flat&logo=lua&logoColor=white)](https://www.lua.org)
 [![Neovim](https://img.shields.io/badge/Neovim-0.12+-57A143?style=flat&logo=neovim&logoColor=white)](https://neovim.io)
 
