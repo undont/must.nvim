@@ -14,9 +14,9 @@
 
 ## Usage
 
-Run `:Must <number>` to open a new instance, which is opened in a shared tab for the session. Once inside, `:Must toc` or `\` will toggle open the Table of Contents (if the RFC has one). `gd` within the main content body jumps to sections within the body, other RFCs, and other sections in other RFCs based on the cursor's position.
+Run `:Must <number>` to open a new instance, which is opened in a shared tab for the session. You can also use `:Must` on its own to select an RFC, searching through items requires a picker that replaces `vim.ui.select`, otherwise you get nvim's native numbered list. Once inside, `:Must toc` or `\` will toggle open the Table of Contents (if the RFC has one). `gd` within the main content body jumps to sections within the body, other RFCs, and other sections in other RFCs based on the cursor's position.
 
-Caches RFCs locally at `stdpath("cache")/must/` with no expiry (they're pretty small `.txt` files). Clean the directory out manually if you ever want to get (a very little amount of) disk space back, I might add cache expiry later on.
+RFCs are cached locally at `stdpath("cache")/must/` with no expiry (they're pretty small `.txt` files). The RFC index however *DOES* have an expiry; once it's more than one day old, it's fetched freshly. Clean the directory out manually if you ever want to get (a very little amount of) disk space back, I might add cache expiry later on.
 
 ## Installation
 

@@ -1,5 +1,6 @@
 local client = require("must.client")
 local toc = require("must.toc")
+local index = require("must.index")
 local config = require("must.config")
 local toc_map = {}
 local cursor_pos = {}
@@ -112,5 +113,21 @@ vim.api.nvim_create_user_command("Must", function(cmd)
         -- fetch if :Must is followed by <number>
     elseif cmd.args:match("^%d+$") then
         client.request(cmd.args)
+    elseif cmd.args == "" then
+        client.load_index(function(lines)
+            local items = index.parse(lines)
+            vim.ui.select(items, {
+                kind = "must",
+                prompt = "search/select an RFC",
+                format_item = function(item)
+                    return item.rfc_num .. " " .. item.rfc_label
+                end,
+            }, function(item, _)
+                if not item then
+                    return
+                end
+                client.request(item.rfc_num)
+            end)
+        end)
     end
-end, { nargs = 1 })
+end, { nargs = "?" })

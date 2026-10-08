@@ -1,7 +1,11 @@
 local M = {}
 
-local base_url = "https://www.rfc-editor.org/rfc/"
+local base_url = "https://www.rfc-editor.org/"
 local must_tab = nil
+local cache_dir = vim.fn.stdpath("cache") .. "/must/"
+local index_file_name = "rfc-index.txt"
+local index_max_age = 24 * 60 * 60 -- 1 day
+local index_timeout = 5 * 1000 -- 5 seconds
 
 -- create a new tab initialised with the contents
 -- and an appropriate name, shared between all RFCs
@@ -32,6 +36,55 @@ local function open(rfc_num, contents, on_open)
     vim.bo[buf].modifiable = false
 end
 
+---@return boolean
+local function is_index_stale()
+    local path = cache_dir .. index_file_name
+    local readable = vim.fn.filereadable(path) == 1
+    if not readable then
+        return true
+    end
+    return index_max_age < (os.time() - vim.uv.fs_stat(path).mtime.sec)
+end
+
+---@param on_load fun(lines: string[])
+function M.load_index(on_load)
+    vim.fn.mkdir(cache_dir, "p")
+    local path = cache_dir .. index_file_name
+    local tmp_path = path .. ".tmp"
+    ---@type uv.uv_timer_t
+    local timer
+    if not is_index_stale() then
+        on_load(vim.fn.readfile(path))
+    else
+        local req = vim.net.request(
+            base_url .. "rfc-index.txt",
+            { outpath = tmp_path },
+            vim.schedule_wrap(function(err, _)
+                timer:stop()
+                if err then
+                    vim.uv.fs_unlink(tmp_path)
+                    if vim.fn.filereadable(path) ~= 1 then
+                        vim.notify("must: no local RFC index found: " .. err, vim.log.levels.ERROR)
+                        return
+                    end
+                    vim.notify(
+                        "must: RFC index could not be refreshed (might be stale)",
+                        vim.log.levels.WARN
+                    )
+                else
+                    local _, msg = vim.uv.fs_rename(tmp_path, path)
+                    if msg then
+                        vim.notify("must: " .. msg, vim.log.levels.ERROR)
+                        return
+                    end
+                end
+                on_load(vim.fn.readfile(path))
+            end)
+        )
+        timer = vim.defer_fn(req.close, index_timeout)
+    end
+end
+
 --- the only network request in the plugin
 --- handles tab/buffer creation, and jumping to
 --- already open RFCs
@@ -47,7 +100,6 @@ function M.request(rfc_num, on_open)
         end
         return
     end
-    local cache_dir = vim.fn.stdpath("cache") .. "/must/"
     local file_name = "rfc" .. rfc_num .. ".txt"
     local file_path = cache_dir .. file_name
     if vim.fn.filereadable(file_path) == 1 then
@@ -55,7 +107,7 @@ function M.request(rfc_num, on_open)
         open(rfc_num, contents, on_open)
     else
         vim.net.request(
-            base_url .. file_name,
+            base_url .. "rfc/" .. file_name,
             {},
             vim.schedule_wrap(function(err, res)
                 if err then

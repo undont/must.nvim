@@ -13,15 +13,15 @@ local function join_blocks(lines)
     local entry = ""
     for _, line in ipairs(lines) do
         if line ~= "" then
-            -- trim leading/trailing whitespace
-            -- from line before appending to entry
-            line = line:match("^%s*(.-)%s*$")
-            -- when entry already contains line
-            -- from first pass add a whitespace
-            -- separator
+            -- no trim required on first pass, to
+            -- account for "indented header examples"
+            -- and other "non-real" entries
             if entry == "" then
                 entry = entry .. line
             else
+                -- trim leading/trailing whitespace
+                -- from line before appending to entry
+                line = line:match("^%s*(.-)%s*$")
                 entry = entry .. " " .. line
             end
         else
