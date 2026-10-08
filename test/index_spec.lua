@@ -19,8 +19,8 @@ describe("parse", function()
         local entry = fixtures.find_entry(entries, "rfc_num", "61")
         assert.are.same({
             rfc_num = "61",
-            rfc_label = "Note on Interprocess Communication in a \z
-            Resource Sharing Computer Network. D.C. Walden. July 1970.",
+            rfc_label = "Note on Interprocess Communication in a"
+                .. " Resource Sharing Computer Network. D.C. Walden. July 1970.",
             obsoleted_by = "RFC62",
         }, entry)
     end)
@@ -36,9 +36,9 @@ describe("parse", function()
         local entry = fixtures.find_entry(entries, "rfc_num", "2616")
         assert.are.same({
             rfc_num = "2616",
-            rfc_label = "Hypertext Transfer Protocol -- HTTP/1.1. R. \z
-            Fielding, J. Gettys, J. Mogul, H. Frystyk, L. Masinter, \z
-            P. Leach, T. Berners-Lee. June 1999.",
+            rfc_label = "Hypertext Transfer Protocol -- HTTP/1.1. R."
+                .. " Fielding, J. Gettys, J. Mogul, H. Frystyk, L. Masinter,"
+                .. " P. Leach, T. Berners-Lee. June 1999.",
             obsoleted_by = "RFC7230, RFC7231, RFC7232, RFC7233, RFC7234, RFC7235",
             obsoletes = "RFC2068",
         }, entry)
@@ -49,8 +49,8 @@ describe("parse", function()
         local entry = fixtures.find_entry(entries, "rfc_num", "31")
         assert.are.same({
             rfc_num = "31",
-            rfc_label = "Binary Message Forms in Computer. D. \z
-            Bobrow, W.R. Sutherland. February 1968.",
+            rfc_label = "Binary Message Forms in Computer. D."
+                .. " Bobrow, W.R. Sutherland. February 1968.",
         }, entry)
     end)
 end)
