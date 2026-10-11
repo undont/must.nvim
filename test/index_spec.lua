@@ -11,6 +11,7 @@ describe("parse", function()
             rfc_label = "Network host status. E. Westheimer. November 1971.",
             obsoleted_by = "RFC267",
             obsoletes = "RFC255",
+            is_pdf = false,
         }, entry)
     end)
     it("extracts all fields correctly (61)", function()
@@ -22,6 +23,7 @@ describe("parse", function()
             rfc_label = "Note on Interprocess Communication in a"
                 .. " Resource Sharing Computer Network. D.C. Walden. July 1970.",
             obsoleted_by = "RFC62",
+            is_pdf = false,
         }, entry)
     end)
     it("doesn't extract 'Not Issued' RFCs", function()
@@ -41,6 +43,7 @@ describe("parse", function()
                 .. " P. Leach, T. Berners-Lee. June 1999.",
             obsoleted_by = "RFC7230, RFC7231, RFC7232, RFC7233, RFC7234, RFC7235",
             obsoletes = "RFC2068",
+            is_pdf = false,
         }, entry)
     end)
     it("extracts correctly even when initial input was wrapped", function()
@@ -51,6 +54,7 @@ describe("parse", function()
             rfc_num = "31",
             rfc_label = "Binary Message Forms in Computer. D."
                 .. " Bobrow, W.R. Sutherland. February 1968.",
+            is_pdf = false,
         }, entry)
     end)
     it("skips header and 'Not Issued' blocks", function()
