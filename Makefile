@@ -1,4 +1,4 @@
-.PHONY: check test fmt help
+.PHONY: check test fmt fmt-check help
 
 check: ## run luacheck
 	@luacheck .

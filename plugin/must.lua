@@ -160,6 +160,10 @@ vim.api.nvim_create_user_command("Must", function(cmd)
                 if not item then
                     return
                 end
+                if item.is_pdf then
+                    vim.notify("must: cannot open PDFs", vim.log.levels.WARN)
+                    return
+                end
                 client.request(item.rfc_num)
             end)
         end)

@@ -5,6 +5,7 @@ local M = {}
 ---@field rfc_label string
 ---@field obsoleted_by string|nil
 ---@field obsoletes string|nil
+---@field is_pdf boolean
 
 ---@param lines string[]
 ---@return string[]
@@ -41,12 +42,15 @@ function M.parse(lines)
         local rfc_label = line:match("^%d+ (.-%u%l+ %d%d%d%d%.)")
         local obsoleted_by = line:match("%([O]bsoleted%sby%s*(.-)%)")
         local obsoletes = line:match("%([O]bsoletes%s*(.-)%)")
+        local is_pdf = line:match("%([F]ormat%:%s*(PDF)%)") ~= nil
+
         if rfc_num and rfc_label then
             table.insert(entries, {
                 rfc_num = rfc_num,
                 rfc_label = rfc_label,
                 obsoleted_by = obsoleted_by,
                 obsoletes = obsoletes,
+                is_pdf = is_pdf,
             })
         end
     end
